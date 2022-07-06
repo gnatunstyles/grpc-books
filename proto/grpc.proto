@@ -1,0 +1,49 @@
+syntax = "proto3";
+
+package api;
+
+option go_package = "./";
+
+service Get{
+    rpc Author(GetAuthorRequest) returns (GetAuthorResponse){};
+    rpc Books(GetBooksRequest) returns (stream Book){};
+}
+
+
+message GetBooksRequest{
+    string authorName = 1;
+}
+
+message GetAuthorRequest{
+    string bookName = 1;
+}
+
+message GetAuthorResponse{
+    int32 id = 1;
+    string authorName = 2;
+}
+
+// service GetBooks{
+//     rpc Books(GetBooksRequest) returns (stream Book){};
+// }
+
+// message GetBooksResponse{
+//     repeated Book books = 1;
+// }
+
+
+/*
+
+Author and book structs
+
+*/
+// message Author{
+//     int id = 1;
+//     string name = 2;
+// }
+
+message Book{
+    int32 id = 1;
+    string bookname = 2;
+    string author = 3;
+}
