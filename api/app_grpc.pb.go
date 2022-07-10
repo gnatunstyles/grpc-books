@@ -22,8 +22,8 @@ const _ = grpc.SupportPackageIsVersion7
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type GetClient interface {
-	Authors(ctx context.Context, in *GetAuthorRequest, opts ...grpc.CallOption) (Get_AuthorsClient, error)
-	Books(ctx context.Context, in *GetBooksRequest, opts ...grpc.CallOption) (Get_BooksClient, error)
+	Authors(ctx context.Context, in *GetAuthorRequest, opts ...grpc.CallOption) (*GetAuthorResponse, error)
+	Books(ctx context.Context, in *GetBooksRequest, opts ...grpc.CallOption) (*GetBooksResponse, error)
 }
 
 type getClient struct {
@@ -34,76 +34,30 @@ func NewGetClient(cc grpc.ClientConnInterface) GetClient {
 	return &getClient{cc}
 }
 
-func (c *getClient) Authors(ctx context.Context, in *GetAuthorRequest, opts ...grpc.CallOption) (Get_AuthorsClient, error) {
-	stream, err := c.cc.NewStream(ctx, &Get_ServiceDesc.Streams[0], "/api.Get/Authors", opts...)
+func (c *getClient) Authors(ctx context.Context, in *GetAuthorRequest, opts ...grpc.CallOption) (*GetAuthorResponse, error) {
+	out := new(GetAuthorResponse)
+	err := c.cc.Invoke(ctx, "/api.Get/Authors", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
-	x := &getAuthorsClient{stream}
-	if err := x.ClientStream.SendMsg(in); err != nil {
-		return nil, err
-	}
-	if err := x.ClientStream.CloseSend(); err != nil {
-		return nil, err
-	}
-	return x, nil
+	return out, nil
 }
 
-type Get_AuthorsClient interface {
-	Recv() (*Author, error)
-	grpc.ClientStream
-}
-
-type getAuthorsClient struct {
-	grpc.ClientStream
-}
-
-func (x *getAuthorsClient) Recv() (*Author, error) {
-	m := new(Author)
-	if err := x.ClientStream.RecvMsg(m); err != nil {
-		return nil, err
-	}
-	return m, nil
-}
-
-func (c *getClient) Books(ctx context.Context, in *GetBooksRequest, opts ...grpc.CallOption) (Get_BooksClient, error) {
-	stream, err := c.cc.NewStream(ctx, &Get_ServiceDesc.Streams[1], "/api.Get/Books", opts...)
+func (c *getClient) Books(ctx context.Context, in *GetBooksRequest, opts ...grpc.CallOption) (*GetBooksResponse, error) {
+	out := new(GetBooksResponse)
+	err := c.cc.Invoke(ctx, "/api.Get/Books", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
-	x := &getBooksClient{stream}
-	if err := x.ClientStream.SendMsg(in); err != nil {
-		return nil, err
-	}
-	if err := x.ClientStream.CloseSend(); err != nil {
-		return nil, err
-	}
-	return x, nil
-}
-
-type Get_BooksClient interface {
-	Recv() (*Book, error)
-	grpc.ClientStream
-}
-
-type getBooksClient struct {
-	grpc.ClientStream
-}
-
-func (x *getBooksClient) Recv() (*Book, error) {
-	m := new(Book)
-	if err := x.ClientStream.RecvMsg(m); err != nil {
-		return nil, err
-	}
-	return m, nil
+	return out, nil
 }
 
 // GetServer is the server API for Get service.
 // All implementations must embed UnimplementedGetServer
 // for forward compatibility
 type GetServer interface {
-	Authors(*GetAuthorRequest, Get_AuthorsServer) error
-	Books(*GetBooksRequest, Get_BooksServer) error
+	Authors(context.Context, *GetAuthorRequest) (*GetAuthorResponse, error)
+	Books(context.Context, *GetBooksRequest) (*GetBooksResponse, error)
 	mustEmbedUnimplementedGetServer()
 }
 
@@ -111,11 +65,11 @@ type GetServer interface {
 type UnimplementedGetServer struct {
 }
 
-func (UnimplementedGetServer) Authors(*GetAuthorRequest, Get_AuthorsServer) error {
-	return status.Errorf(codes.Unimplemented, "method Authors not implemented")
+func (UnimplementedGetServer) Authors(context.Context, *GetAuthorRequest) (*GetAuthorResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method Authors not implemented")
 }
-func (UnimplementedGetServer) Books(*GetBooksRequest, Get_BooksServer) error {
-	return status.Errorf(codes.Unimplemented, "method Books not implemented")
+func (UnimplementedGetServer) Books(context.Context, *GetBooksRequest) (*GetBooksResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method Books not implemented")
 }
 func (UnimplementedGetServer) mustEmbedUnimplementedGetServer() {}
 
@@ -130,46 +84,40 @@ func RegisterGetServer(s grpc.ServiceRegistrar, srv GetServer) {
 	s.RegisterService(&Get_ServiceDesc, srv)
 }
 
-func _Get_Authors_Handler(srv interface{}, stream grpc.ServerStream) error {
-	m := new(GetAuthorRequest)
-	if err := stream.RecvMsg(m); err != nil {
-		return err
+func _Get_Authors_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetAuthorRequest)
+	if err := dec(in); err != nil {
+		return nil, err
 	}
-	return srv.(GetServer).Authors(m, &getAuthorsServer{stream})
-}
-
-type Get_AuthorsServer interface {
-	Send(*Author) error
-	grpc.ServerStream
-}
-
-type getAuthorsServer struct {
-	grpc.ServerStream
-}
-
-func (x *getAuthorsServer) Send(m *Author) error {
-	return x.ServerStream.SendMsg(m)
-}
-
-func _Get_Books_Handler(srv interface{}, stream grpc.ServerStream) error {
-	m := new(GetBooksRequest)
-	if err := stream.RecvMsg(m); err != nil {
-		return err
+	if interceptor == nil {
+		return srv.(GetServer).Authors(ctx, in)
 	}
-	return srv.(GetServer).Books(m, &getBooksServer{stream})
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/api.Get/Authors",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(GetServer).Authors(ctx, req.(*GetAuthorRequest))
+	}
+	return interceptor(ctx, in, info, handler)
 }
 
-type Get_BooksServer interface {
-	Send(*Book) error
-	grpc.ServerStream
-}
-
-type getBooksServer struct {
-	grpc.ServerStream
-}
-
-func (x *getBooksServer) Send(m *Book) error {
-	return x.ServerStream.SendMsg(m)
+func _Get_Books_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetBooksRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(GetServer).Books(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/api.Get/Books",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(GetServer).Books(ctx, req.(*GetBooksRequest))
+	}
+	return interceptor(ctx, in, info, handler)
 }
 
 // Get_ServiceDesc is the grpc.ServiceDesc for Get service.
@@ -178,18 +126,16 @@ func (x *getBooksServer) Send(m *Book) error {
 var Get_ServiceDesc = grpc.ServiceDesc{
 	ServiceName: "api.Get",
 	HandlerType: (*GetServer)(nil),
-	Methods:     []grpc.MethodDesc{},
-	Streams: []grpc.StreamDesc{
+	Methods: []grpc.MethodDesc{
 		{
-			StreamName:    "Authors",
-			Handler:       _Get_Authors_Handler,
-			ServerStreams: true,
+			MethodName: "Authors",
+			Handler:    _Get_Authors_Handler,
 		},
 		{
-			StreamName:    "Books",
-			Handler:       _Get_Books_Handler,
-			ServerStreams: true,
+			MethodName: "Books",
+			Handler:    _Get_Books_Handler,
 		},
 	},
+	Streams:  []grpc.StreamDesc{},
 	Metadata: "proto/app.proto",
 }
