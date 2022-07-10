@@ -2,10 +2,10 @@ syntax = "proto3";
 
 package api;
 
-option go_package = "./";
+option go_package = "./api";
 
 service Get{
-    rpc Author(GetAuthorRequest) returns (GetAuthorResponse){};
+    rpc Authors(GetAuthorRequest) returns (stream Author){};
     rpc Books(GetBooksRequest) returns (stream Book){};
 }
 
@@ -18,10 +18,10 @@ message GetAuthorRequest{
     string bookName = 1;
 }
 
-message GetAuthorResponse{
-    int32 id = 1;
-    string authorName = 2;
-}
+// message GetAuthorResponse{
+//     int32 id = 1;
+//     string authorName = 2;
+// }
 
 // service GetBooks{
 //     rpc Books(GetBooksRequest) returns (stream Book){};
@@ -37,10 +37,10 @@ message GetAuthorResponse{
 Author and book structs
 
 */
-// message Author{
-//     int id = 1;
-//     string name = 2;
-// }
+message Author{
+    int32 id = 1;
+    string name = 2;
+}
 
 message Book{
     int32 id = 1;
