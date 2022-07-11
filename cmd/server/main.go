@@ -1,12 +1,12 @@
 package main
 
 import (
-	"database/sql"
-	"fmt"
 	"log"
 	"net"
+	"os"
 
 	"github.com/gnatunstyles/grpc-books/api"
+	"github.com/gnatunstyles/grpc-books/db"
 	"github.com/gnatunstyles/grpc-books/pkg"
 	_ "github.com/go-sql-driver/mysql"
 	"google.golang.org/grpc"
@@ -15,16 +15,17 @@ import (
 func main() {
 
 	//initzializing db
-	db, err := sql.Open("mysql", "root:my-secret-pw@tcp(127.0.0.1:3306)/db")
+	dsn := os.Getenv("MYSQL_CONN_STRING")
+	Database, err := db.NewDB(dsn)
 	if err != nil {
-		panic("Failed to connect to db")
+		log.Fatal(err)
 	}
-	fmt.Println("database connected successfully")
+	defer Database.Close()
 
 	//initializing grpc server
 	s := grpc.NewServer()
 	srv := pkg.NewGRPCServer()
-	srv.DBConn = db
+	srv.DBConn = Database.DB
 
 	api.RegisterGetServer(s, srv)
 	//open listener at port 8080
