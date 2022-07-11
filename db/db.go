@@ -15,6 +15,7 @@ type DBRepo struct {
 	*sql.DB
 }
 
+//Creating new db
 func NewDB(dsn string) (*DBRepo, error) {
 	db, err := sql.Open("mysql", dsn)
 	if err != nil {
