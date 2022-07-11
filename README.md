@@ -24,7 +24,7 @@
 1) docker build -t mysql_db .
 2) docker run mysql_db
 
-2. Cгенерировать grpc-файлы и исполняемый файл сервиса при помощи Makefile:
+2. Cгенерировать grpc-файлы и исполняемый файл сервиса при помощи Makefile и запустить его:
 
 1) make gen
 2) make build
