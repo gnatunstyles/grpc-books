@@ -29,3 +29,8 @@
 1) make gen
 2) make build
 3) make run
+
+3. Для совершения удаленных вызовов можно воспользоваться утилитой Evans:
+1) Загрузить и установить Evans: https://github.com/ktr0731/evans
+2) Запустить Evans:
+   - evans proto/app.proto -p 8080
